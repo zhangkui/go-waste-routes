@@ -80,14 +80,14 @@ func NonEmpty(value string, fallback string) string {
 
 func BuildStatusFlow() map[string][]string {
 	return map[string][]string{
-		"draft":    {"active", "archived"},
-		"active":   {"disabled", "archived"},
-		"disabled": {"active", "archived"},
-		"pending":  {"running", "cancelled", "abnormal", "completed"},
-		"running":  {"completed", "cancelled", "abnormal"},
+		"draft":     {"active", "archived"},
+		"active":    {"disabled", "archived"},
+		"disabled":  {"active", "archived"},
+		"pending":   {"running", "cancelled", "abnormal", "completed"},
+		"running":   {"completed", "cancelled", "abnormal"},
 		"completed": {"written_off"},
 		"confirmed": {"partial", "paid", "written_off"},
-		"partial":  {"paid", "written_off"},
+		"partial":   {"paid", "written_off"},
 	}
 }
 
@@ -361,4 +361,7 @@ func normalizeServiceWindow(value string) string {
 		return ""
 	}
 	return start + "-" + end
+}
+func NormalizeCorrectionReason(reason string) string {
+	return reason
 }
