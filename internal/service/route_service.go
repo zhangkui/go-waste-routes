@@ -45,6 +45,8 @@ func (s *RouteService) NextStatus(status string) string {
 		return domain.RouteRunning
 	case domain.RouteRunning:
 		return domain.RouteCompleted
+	case domain.RouteAbnormal:
+		return domain.RouteCancelled
 	default:
 		return status
 	}
