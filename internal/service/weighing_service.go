@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"fmt"
@@ -17,20 +17,20 @@ func (s *WeighingService) CalculateNetWeight(gross, tare float64) float64 {
 
 func (s *WeighingService) DetectAbnormality(record domain.WeighingRecord, history []domain.WeighingRecord, capacity float64) *domain.WeighingAbnormality {
 	if record.NetWeight < 0 {
-		return s.buildAbnormal(record.ID, "negative_net_weight", "净重小于零")
+		return s.buildAbnormal(record.ID, "negative_net_weight", "鍑€閲嶅皬浜庨浂")
 	}
 	if capacity > 0 && (record.GrossWeight > capacity || record.TareWeight > capacity) {
-		return s.buildAbnormal(record.ID, "exceeded_scale_capacity", "超过地磅量程")
+		return s.buildAbnormal(record.ID, "exceeded_scale_capacity", "瓒呰繃鍦扮閲忕▼")
 	}
 	if record.Manual {
-		return s.buildAbnormal(record.ID, "manual_entry", "手工录入")
+		return s.buildAbnormal(record.ID, "manual_entry", "鎵嬪伐褰曞叆")
 	}
 	if len(history) == 0 {
 		return nil
 	}
 	avg := s.averageNetWeight(history)
 	if avg > 0 && abs(record.NetWeight-avg)/avg > 0.5 {
-		return s.buildAbnormal(record.ID, "deviation_over_50_percent", "偏离历史均值过大")
+		return s.buildAbnormal(record.ID, "deviation_over_50_percent", "鍋忕鍘嗗彶鍧囧€艰繃澶?)
 	}
 	return nil
 }
@@ -75,4 +75,5 @@ func abs(value float64) float64 {
 func (s *WeighingService) Summary(record domain.WeighingRecord) string {
 	return fmt.Sprintf("gross=%.2f tare=%.2f net=%.2f", record.GrossWeight, record.TareWeight, record.NetWeight)
 }
+
 
