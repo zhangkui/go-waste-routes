@@ -34,7 +34,7 @@ func (s *RouteService) EstimateArrivalTimes(start time.Time, stops []domain.Rout
 	current := start
 	for index := range ordered {
 		ordered[index].EstimatedArrival = current.Format("15:04")
-		current = current.Add(time.Duration(max(ordered[index].StayMinutes, 1)) * time.Minute)
+		current = current.Add(time.Duration(max(ordered[index].StayMinutes, 0)) * time.Minute)
 	}
 	return ordered
 }
