@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"errors"
@@ -56,3 +56,4 @@ func max(a, b int) int {
 	}
 	return b
 }
+
