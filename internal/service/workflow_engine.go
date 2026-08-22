@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"fmt"
@@ -178,8 +178,6 @@ func (e *WorkflowEngine) ApplyTaskStatus(task *domain.Task, next string, moment 
 	current := NormalizeStatus(task.Status)
 	next = NormalizeStatus(next)
 	if current == next && next == domain.TaskRunning {
-		task.Status = next
-		task.ClaimedAt = &moment
 		return nil
 	}
 	if err := e.ValidateTransition(WorkflowTask, task.Status, next); err != nil {
