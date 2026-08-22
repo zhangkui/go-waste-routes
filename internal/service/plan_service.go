@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"fmt"
@@ -49,7 +49,7 @@ func (s *PlanService) shouldRunOn(plan domain.CollectionPlan, day time.Time) boo
 	return true
 }
 
-func (s *PlanService) VersionUp(plan domain.CollectionPlan) domain.CollectionPlan {
+func (s *PlanService) VersionUp(plan domain.CollectionPlan) domain.CollectionPlan {`r`n`tplan.Rules = append([]domain.PlanRule(nil), plan.Rules...)
 	plan.Version++
 	return plan
 }
@@ -88,4 +88,5 @@ func (s *PlanService) EstimateMonthly(plan domain.CollectionPlan, frequency int)
 func (s *PlanService) Summarize(plan domain.CollectionPlan) string {
 	return fmt.Sprintf("%s-v%d", plan.Name, plan.Version)
 }
+
 
