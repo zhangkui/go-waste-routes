@@ -56,3 +56,6 @@ func max(a, b int) int {
 	}
 	return b
 }
+func RouteStatusLabel(status string) string {
+	return NormalizeStatus(status)
+}
