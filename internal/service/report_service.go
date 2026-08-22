@@ -6,9 +6,9 @@ import (
 )
 
 type DashboardStats struct {
-	TodayTasks       int            `json:"today_tasks"`
-	AbnormalCount    int            `json:"abnormal_count"`
-	UnpaidInvoices   int            `json:"unpaid_invoices"`
+	TodayTasks       int                `json:"today_tasks"`
+	AbnormalCount    int                `json:"abnormal_count"`
+	UnpaidInvoices   int                `json:"unpaid_invoices"`
 	CollectionSeries map[string]float64 `json:"collection_series"`
 }
 
@@ -37,15 +37,15 @@ func (s *ReportService) SortKeys(values map[string]float64) []string {
 }
 
 func (s *ReportService) MergeStats(base DashboardStats, extra DashboardStats) DashboardStats {
-	base.TodayTasks += extra.TodayTasks
-	base.AbnormalCount += extra.AbnormalCount
-	base.UnpaidInvoices += extra.UnpaidInvoices
-	if base.CollectionSeries == nil {
-		base.CollectionSeries = map[string]float64{}
+	snapshot := CloneDashboardStats(base)
+	snapshot.TodayTasks += extra.TodayTasks
+	snapshot.AbnormalCount += extra.AbnormalCount
+	snapshot.UnpaidInvoices += extra.UnpaidInvoices
+	if snapshot.CollectionSeries == nil {
+		snapshot.CollectionSeries = map[string]float64{}
 	}
 	for key, value := range extra.CollectionSeries {
-		base.CollectionSeries[key] += value
+		snapshot.CollectionSeries[key] += value
 	}
-	return base
+	return snapshot
 }
-

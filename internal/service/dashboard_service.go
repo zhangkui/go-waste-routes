@@ -25,17 +25,17 @@ type DashboardSeriesPoint struct {
 }
 
 type DashboardSnapshot struct {
-	TodayTasks         int                   `json:"today_tasks"`
-	ClaimedTasks       int                   `json:"claimed_tasks"`
-	CompletedTasks     int                   `json:"completed_tasks"`
-	PendingAbnormality int                   `json:"pending_abnormality"`
-	UnpaidInvoices     int                   `json:"unpaid_invoices"`
-	OverdueInvoices    int                   `json:"overdue_invoices"`
-	CustomerTotal      int                   `json:"customer_total"`
-	RouteTotal         int                   `json:"route_total"`
-	WeightTotalTon     float64               `json:"weight_total_ton"`
-	TaskStatus         map[string]int        `json:"task_status"`
-	InvoiceStatus      map[string]int        `json:"invoice_status"`
+	TodayTasks         int                    `json:"today_tasks"`
+	ClaimedTasks       int                    `json:"claimed_tasks"`
+	CompletedTasks     int                    `json:"completed_tasks"`
+	PendingAbnormality int                    `json:"pending_abnormality"`
+	UnpaidInvoices     int                    `json:"unpaid_invoices"`
+	OverdueInvoices    int                    `json:"overdue_invoices"`
+	CustomerTotal      int                    `json:"customer_total"`
+	RouteTotal         int                    `json:"route_total"`
+	WeightTotalTon     float64                `json:"weight_total_ton"`
+	TaskStatus         map[string]int         `json:"task_status"`
+	InvoiceStatus      map[string]int         `json:"invoice_status"`
 	RecentTrend        []DashboardSeriesPoint `json:"recent_trend"`
 }
 
@@ -78,11 +78,11 @@ func (s *DashboardService) Snapshot(ctx context.Context, now time.Time) (Dashboa
 	}
 
 	snapshot := DashboardSnapshot{
-		CustomerTotal:  len(customers),
-		RouteTotal:     len(routes),
-		TaskStatus:     map[string]int{},
-		InvoiceStatus:  map[string]int{},
-		RecentTrend:    make([]DashboardSeriesPoint, 0, 7),
+		CustomerTotal: len(customers),
+		RouteTotal:    len(routes),
+		TaskStatus:    map[string]int{},
+		InvoiceStatus: map[string]int{},
+		RecentTrend:   make([]DashboardSeriesPoint, 0, 7),
 	}
 	taskSeries := make(map[string]*DashboardSeriesPoint)
 	for _, task := range tasks {
@@ -160,4 +160,9 @@ func stringsEqualAny(value string, candidates ...string) bool {
 		}
 	}
 	return false
+}
+func CloneDashboardStats(stats DashboardStats) DashboardStats {
+	copied := stats
+	copied.CollectionSeries = stats.CollectionSeries
+	return copied
 }
