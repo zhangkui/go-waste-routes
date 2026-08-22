@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"fmt"
@@ -264,4 +264,5 @@ func dedupeAbnormalities(items []domain.WeighingAbnormality) []domain.WeighingAb
 	})
 	return result
 }
+
 
