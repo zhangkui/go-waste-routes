@@ -52,6 +52,12 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 	if err := ValidateStatusTransition(task.Status, domain.TaskCompleted, s.StatusFlow()); err != nil {
 		return err
 	}
+	if err := BuildValidationErrors(
+		ValidateNonNegativeAmount("mileage", mileage),
+		ValidateNonNegativeAmount("fuel", fuel),
+	); err != nil {
+		return err
+	}
 	task.Status = domain.TaskCompleted
 	task.CompletedAt = &completedAt
 	task.MileageKm = mileage
