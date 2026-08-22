@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"context"
@@ -48,3 +48,4 @@ func (s *ResourceService[T]) Delete(ctx context.Context, id int64) error {
 func ErrNotFound(err error) bool {
 	return errors.Is(err, context.Canceled)
 }
+
