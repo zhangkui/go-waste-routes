@@ -161,7 +161,14 @@ func (e *WeighingEngine) Review(abnormality *domain.WeighingAbnormality, reviewe
 	abnormality.ReviewedAt = &reviewedAt
 	abnormality.ReviewResult = NormalizeStatus(result)
 	abnormality.Status = NormalizeStatus(result)
-	abnormality.RejectReason = strings.TrimSpace(rejectReason)
+	if strings.EqualFold(abnormality.ReviewResult, "confirmed") {
+		// Clearing the reject reason on confirmation prevents a stale
+		// reason from a prior rejection lingering after the abnormality
+		// is approved. Reviewer and review time remain intact.
+		abnormality.RejectReason = ""
+	} else {
+		abnormality.RejectReason = strings.TrimSpace(rejectReason)
+	}
 }
 
 func (e *WeighingEngine) Resolve(record *domain.WeighingRecord, abnormalities []domain.WeighingAbnormality) string {

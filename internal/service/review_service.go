@@ -30,14 +30,20 @@ func (s *ReviewService) ReviewAbnormality(abnormality *domain.WeighingAbnormalit
 	}
 	result := "rejected"
 	nextStatus := "rejected"
+	rejectReason := decision.Reason
 	if decision.Approved {
 		result = "confirmed"
 		nextStatus = "confirmed"
+		// Approval clears any stale rejection reason carried over from a
+		// previous rejection so the record no longer displays a reject
+		// reason while in the confirmed state. Reviewer and review time
+		// are preserved below regardless of the decision.
+		rejectReason = ""
 	}
 	abnormality.ReviewerID = &decision.ReviewerID
 	abnormality.ReviewedAt = &decision.ReviewedAt
 	abnormality.ReviewResult = result
-	abnormality.RejectReason = decision.Reason
+	abnormality.RejectReason = rejectReason
 	abnormality.Status = nextStatus
 	return nil
 }
