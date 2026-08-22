@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"fmt"
@@ -88,4 +88,5 @@ func (s *PlanService) EstimateMonthly(plan domain.CollectionPlan, frequency int)
 func (s *PlanService) Summarize(plan domain.CollectionPlan) string {
 	return fmt.Sprintf("%s-v%d", plan.Name, plan.Version)
 }
+
 
