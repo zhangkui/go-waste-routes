@@ -1,0 +1,50 @@
+:root {
+  color: #10212e;
+  background: linear-gradient(135deg, #f5f7fb, #e6edf5);
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.auth-card {
+  max-width: 420px;
+  margin: 8vh auto;
+  padding: 32px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 50px rgba(24, 36, 53, 0.12);
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #0f1e2d;
+  color: #fff;
+}
+
+.brand {
+  padding: 24px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.main {
+  padding: 20px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}

@@ -1,0 +1,11 @@
+.env
+bin/
+dist/
+coverage.out
+frontend/node_modules/
+frontend/dist/
+.gocache/
+.gomodcache/
+*.log
+.idea/
+.vscode/

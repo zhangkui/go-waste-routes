@@ -1,0 +1,9 @@
+files=88
+lines=6509
+docker_project=gowaste
+compose_file=docker-compose.yml
+api_health=ok
+frontend_root=200
+login=admin/Admin123!=ok
+api_login=ok
+containers=go-waste-mysql,go-waste-redis,go-waste-api,go-waste-frontend

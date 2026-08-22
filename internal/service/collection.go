@@ -1,0 +1,37 @@
+package service
+
+import (
+	"context"
+	"fmt"
+)
+
+type PagedLister[T any] interface {
+	List(context.Context, int, int) ([]T, int64, error)
+}
+
+func LoadAll[T any](ctx context.Context, lister PagedLister[T]) ([]T, error) {
+	pageSize := 200
+	page := 1
+	items := make([]T, 0)
+	for {
+		batch, total, err := lister.List(ctx, page, pageSize)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, batch...)
+		if int64(len(items)) >= total || len(batch) == 0 {
+			break
+		}
+		page++
+	}
+	return items, nil
+}
+
+func MustLoadAll[T any](ctx context.Context, lister PagedLister[T]) []T {
+	items, err := LoadAll(ctx, lister)
+	if err != nil {
+		panic(fmt.Sprintf("load all failed: %v", err))
+	}
+	return items
+}
+
