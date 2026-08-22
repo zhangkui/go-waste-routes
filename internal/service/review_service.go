@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"fmt"
@@ -89,4 +89,5 @@ func (s *ReviewService) RecordPayment(invoice *domain.Invoice, record *domain.Pa
 	s.billing.ApplyPayment(invoice, amount)
 	return nil
 }
+
 
