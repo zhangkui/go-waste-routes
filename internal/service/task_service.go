@@ -39,11 +39,11 @@ func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64,
 }
 
 func (s *TaskService) Skip(stop *domain.TaskStop, reason string, note string) error {
-	if reason == "" {
-		return fmt.Errorf("skip reason required")
+	if !domain.IsAllowedSkipReason(reason) {
+		return fmt.Errorf("invalid skip reason: %s", reason)
 	}
 	stop.Status = "skipped"
-	stop.SkipReason = reason
+	stop.SkipReason = NormalizeStatus(reason)
 	stop.Notes = note
 	return nil
 }
