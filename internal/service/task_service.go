@@ -60,7 +60,7 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 }
 
 func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
-	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
+	return fmt.Sprintf("TASK-%s-%04d", truncateDate(planDate).Format("20060102"), sequence)
 }
 
 

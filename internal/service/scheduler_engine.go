@@ -169,7 +169,7 @@ func (s *Scheduler) Preview(plan domain.CollectionPlan, customer domain.Customer
 	previews := make([]SchedulePreview, 0, len(occurrences))
 	for index, occurrence := range occurrences {
 		previews = append(previews, SchedulePreview{
-			TaskNumber: GenerateTaskNumber(plan.ID, occurrence.Date, index+1),
+			TaskNumber: GenerateTaskNumber(occurrence.Date, index+1),
 			PlanID:     plan.ID,
 			CustomerID: customer.ID,
 			Occurrence: occurrence,
@@ -431,8 +431,8 @@ func dedupeInts(values []int) []int {
 	return unique
 }
 
-func GenerateTaskNumber(planID int64, date time.Time, sequence int) string {
-	return fmt.Sprintf("TASK-%d-%s-%03d", planID, truncateDate(date).Format("20060102"), sequence)
+func GenerateTaskNumber(date time.Time, sequence int) string {
+	return fmt.Sprintf("TASK-%s-%04d", truncateDate(date).Format("20060102"), sequence)
 }
 
 func GenerateRouteNumber(planID int64, date time.Time, sequence int) string {
