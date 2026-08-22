@@ -23,6 +23,9 @@ func (s *TaskService) StatusFlow() map[string][]string {
 }
 
 func (s *TaskService) Claim(task *domain.Task, claimedAt time.Time) error {
+	if task == nil {
+		return fmt.Errorf("task is nil")
+	}
 	if err := ValidateStatusTransition(task.Status, domain.TaskClaimed, s.StatusFlow()); err != nil {
 		return err
 	}
@@ -31,14 +34,21 @@ func (s *TaskService) Claim(task *domain.Task, claimedAt time.Time) error {
 	return nil
 }
 
-func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) {
+func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) error {
+	if stop == nil {
+		return fmt.Errorf("task stop is nil")
+	}
 	stop.Status = "arrived"
 	stop.Longitude = longitude
 	stop.Latitude = latitude
 	stop.ArrivedAt = &arrivedAt
+	return nil
 }
 
 func (s *TaskService) Skip(stop *domain.TaskStop, reason string, note string) error {
+	if stop == nil {
+		return fmt.Errorf("task stop is nil")
+	}
 	if reason == "" {
 		return fmt.Errorf("skip reason required")
 	}
@@ -49,6 +59,9 @@ func (s *TaskService) Skip(stop *domain.TaskStop, reason string, note string) er
 }
 
 func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage, fuel float64) error {
+	if task == nil {
+		return fmt.Errorf("task is nil")
+	}
 	if err := ValidateStatusTransition(task.Status, domain.TaskCompleted, s.StatusFlow()); err != nil {
 		return err
 	}
