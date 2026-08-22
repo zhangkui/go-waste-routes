@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	WorkflowPlan       = "plan"
-	WorkflowRoute      = "route"
-	WorkflowTask       = "task"
-	WorkflowInvoice    = "invoice"
-	WorkflowWeighing   = "weighing"
-	WorkflowAbnormal   = "abnormality"
-	WorkflowUser       = "user"
-	WorkflowVehicle    = "vehicle"
+	WorkflowPlan     = "plan"
+	WorkflowRoute    = "route"
+	WorkflowTask     = "task"
+	WorkflowInvoice  = "invoice"
+	WorkflowWeighing = "weighing"
+	WorkflowAbnormal = "abnormality"
+	WorkflowUser     = "user"
+	WorkflowVehicle  = "vehicle"
 )
 
 type WorkflowEngine struct {
@@ -43,7 +43,7 @@ func NewWorkflowEngine() *WorkflowEngine {
 			WorkflowTask: {
 				domain.TaskPending:   {domain.TaskClaimed, domain.TaskSkipped, domain.TaskAbnormal},
 				domain.TaskClaimed:   {domain.TaskRunning, domain.TaskSkipped, domain.TaskAbnormal},
-				domain.TaskRunning:   {domain.TaskCompleted, domain.TaskSkipped, domain.TaskAbnormal},
+				domain.TaskRunning:   {domain.TaskRunning, domain.TaskCompleted, domain.TaskSkipped, domain.TaskAbnormal},
 				domain.TaskCompleted: {},
 				domain.TaskSkipped:   {},
 				domain.TaskAbnormal:  {domain.TaskCompleted, domain.TaskSkipped},
@@ -56,7 +56,7 @@ func NewWorkflowEngine() *WorkflowEngine {
 				domain.InvoiceWrittenOff: {},
 			},
 			WorkflowWeighing: {
-				"draft":    {"confirmed", "abnormal"},
+				"draft":     {"confirmed", "abnormal"},
 				"confirmed": {"corrected", "abnormal"},
 				"corrected": {},
 				"abnormal":  {"reviewing", "rejected"},
@@ -64,10 +64,10 @@ func NewWorkflowEngine() *WorkflowEngine {
 				"rejected":  {},
 			},
 			WorkflowAbnormal: {
-				"pending": { "reviewing", "rejected" },
-				"reviewing": { "confirmed", "rejected" },
+				"pending":   {"reviewing", "rejected"},
+				"reviewing": {"confirmed", "rejected"},
 				"confirmed": {},
-				"rejected": {},
+				"rejected":  {},
 			},
 			WorkflowUser: {
 				domain.UserStatusEnabled:  {domain.UserStatusDisabled},
@@ -75,9 +75,9 @@ func NewWorkflowEngine() *WorkflowEngine {
 			},
 			WorkflowVehicle: {
 				"available": {"repair", "scrap", "disabled"},
-				"repair":     {"available", "disabled"},
-				"scrap":      {},
-				"disabled":   {"available"},
+				"repair":    {"available", "disabled"},
+				"scrap":     {},
+				"disabled":  {"available"},
 			},
 		},
 	}
@@ -175,10 +175,17 @@ func (e *WorkflowEngine) ApplyTaskStatus(task *domain.Task, next string, moment 
 	if task == nil {
 		return fmt.Errorf("task required")
 	}
+	current := NormalizeStatus(task.Status)
+	next = NormalizeStatus(next)
+	if current == next && next == domain.TaskRunning {
+		task.Status = next
+		task.ClaimedAt = &moment
+		return nil
+	}
 	if err := e.ValidateTransition(WorkflowTask, task.Status, next); err != nil {
 		return err
 	}
-	task.Status = NormalizeStatus(next)
+	task.Status = next
 	switch task.Status {
 	case domain.TaskClaimed:
 		task.ClaimedAt = &moment
@@ -289,4 +296,3 @@ func MergeStatusHistory(existing []domain.StatusHistory, incoming []domain.Statu
 	})
 	return merged
 }
-
