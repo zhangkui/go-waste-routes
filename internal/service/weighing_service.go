@@ -48,7 +48,7 @@ func (s *WeighingService) BuildCorrection(record domain.WeighingRecord, reason s
 		OriginalTare:     record.TareWeight,
 		CorrectedGross:   record.GrossWeight,
 		CorrectedTare:    record.TareWeight,
-		Reason:           reason,
+		Reason:           NormalizeCorrectionReason(reason),
 		OperatorID:       operatorID,
 	}
 }
@@ -75,4 +75,3 @@ func abs(value float64) float64 {
 func (s *WeighingService) Summary(record domain.WeighingRecord) string {
 	return fmt.Sprintf("gross=%.2f tare=%.2f net=%.2f", record.GrossWeight, record.TareWeight, record.NetWeight)
 }
-
