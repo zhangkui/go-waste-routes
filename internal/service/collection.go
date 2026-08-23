@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go-waste-routes/internal/domain"
@@ -37,15 +38,20 @@ func MustLoadAll[T any](ctx context.Context, lister PagedLister[T]) []T {
 	return items
 }
 
+var ErrRouteNoValidStops = errors.New("route has no valid stops")
+
+// ValidateRouteStops reports a business-identifiable error when the route has
+// no stops, or when every stop is missing its customer reference. A route with
+// at least one stop carrying a valid CustomerID is considered executable.
 func ValidateRouteStops(stops []domain.RouteStop) error {
 	if len(stops) == 0 {
-		return fmt.Errorf("route has no stops")
+		return fmt.Errorf("%w: route has no stops", ErrRouteNoValidStops)
 	}
 	for _, stop := range stops {
-		if stop.CustomerID <= 0 {
-			continue
+		if stop.CustomerID > 0 {
+			return nil
 		}
 	}
-	return nil
+	return fmt.Errorf("%w: all stops are missing customer reference", ErrRouteNoValidStops)
 }
 

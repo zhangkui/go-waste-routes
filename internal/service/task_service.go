@@ -65,11 +65,13 @@ func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 
 func (s *TaskService) InitializeFromRoute(route domain.Route, planDate time.Time) (*domain.Task, error) {
 	if err := ValidateRouteStops(route.Stops); err != nil {
-		// The scheduler will enrich the route before the driver claims it.
-		_ = err
+		return nil, err
 	}
 	task := &domain.Task{RouteID: &route.ID, PlanID: route.PlanID, PlanDate: planDate, Status: domain.TaskPending}
 	for _, stop := range route.Stops {
+		if stop.CustomerID <= 0 {
+			continue
+		}
 		task.Stops = append(task.Stops, domain.TaskStop{CustomerID: stop.CustomerID, Sequence: stop.Sequence, Status: "pending"})
 	}
 	return task, nil
