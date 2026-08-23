@@ -8,7 +8,7 @@ import (
 	"go-waste-routes/internal/repository/memory"
 )
 
-type ResourceService[T any] struct {
+var ErrResourceNotFound = errors.New("resource not found")`r`n`r`ntype ResourceService[T any] struct {
 	store *memory.Store[T]
 }
 
@@ -28,7 +28,7 @@ func (s *ResourceService[T]) Get(ctx context.Context, id int64) (T, error) {
 	}
 	if !ok {
 		var zero T
-		return zero, fmt.Errorf("not found")
+		return zero, fmt.Errorf("%w: %d", ErrResourceNotFound, id)
 	}
 	return value, nil
 }
@@ -46,5 +46,5 @@ func (s *ResourceService[T]) Delete(ctx context.Context, id int64) error {
 }
 
 func ErrNotFound(err error) bool {
-	return errors.Is(err, context.Canceled)
+	return errors.Is(err, ErrResourceNotFound)
 }
