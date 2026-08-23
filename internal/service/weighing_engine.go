@@ -18,11 +18,11 @@ type WeightBaseline struct {
 }
 
 type WeightDeviation struct {
-	Field      string
-	Baseline   float64
-	Actual     float64
-	Percent    float64
-	Exceeded   bool
+	Field    string
+	Baseline float64
+	Actual   float64
+	Percent  float64
+	Exceeded bool
 }
 
 type WeighingEngine struct{}
@@ -169,7 +169,7 @@ func (e *WeighingEngine) Resolve(record *domain.WeighingRecord, abnormalities []
 		return "confirmed"
 	}
 	for _, abnormality := range abnormalities {
-		if strings.EqualFold(abnormality.Type, "negative_net") {
+		if strings.EqualFold(abnormality.Type, "negative_net") || strings.EqualFold(abnormality.Type, "scale_range") || strings.EqualFold(abnormality.Type, "scale_fault") {
 			record.Status = "abnormal"
 			return "abnormal"
 		}
@@ -191,16 +191,16 @@ func (e *WeighingEngine) IsOutOfRange(record domain.WeighingRecord, bridge domai
 
 func (e *WeighingEngine) Snapshot(record domain.WeighingRecord, baseline WeightBaseline) map[string]any {
 	return map[string]any{
-		"record_id":      record.ID,
-		"customer_id":    record.CustomerID,
-		"gross_weight":   record.GrossWeight,
-		"tare_weight":    record.TareWeight,
-		"net_weight":     record.NetWeight,
-		"baseline_net":   baseline.NetMean,
-		"deviation_pct":  e.DeviationPercent(record.NetWeight, baseline.NetMean),
-		"is_manual":      record.Manual,
-		"manual_reason":  strings.TrimSpace(record.ManualReason),
-		"status":         record.Status,
+		"record_id":     record.ID,
+		"customer_id":   record.CustomerID,
+		"gross_weight":  record.GrossWeight,
+		"tare_weight":   record.TareWeight,
+		"net_weight":    record.NetWeight,
+		"baseline_net":  baseline.NetMean,
+		"deviation_pct": e.DeviationPercent(record.NetWeight, baseline.NetMean),
+		"is_manual":     record.Manual,
+		"manual_reason": strings.TrimSpace(record.ManualReason),
+		"status":        record.Status,
 	}
 }
 
@@ -264,4 +264,3 @@ func dedupeAbnormalities(items []domain.WeighingAbnormality) []domain.WeighingAb
 	})
 	return result
 }
-
