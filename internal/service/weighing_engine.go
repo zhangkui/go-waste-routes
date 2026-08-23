@@ -249,18 +249,12 @@ func dedupeAbnormalities(items []domain.WeighingAbnormality) []domain.WeighingAb
 	seen := make(map[string]struct{}, len(items))
 	result := make([]domain.WeighingAbnormality, 0, len(items))
 	for _, item := range items {
-		key := fmt.Sprintf("%d", item.WeighingRecordID)
+		key := fmt.Sprintf("%d:%s", item.WeighingRecordID, item.Type)
 		if _, ok := seen[key]; ok {
 			continue
 		}
 		seen[key] = struct{}{}
 		result = append(result, item)
 	}
-	sort.SliceStable(result, func(i, j int) bool {
-		if result[i].WeighingRecordID == result[j].WeighingRecordID {
-			return result[i].Type < result[j].Type
-		}
-		return result[i].WeighingRecordID < result[j].WeighingRecordID
-	})
 	return result
 }
