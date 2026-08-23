@@ -11,6 +11,24 @@ type TaskService struct{}
 
 func NewTaskService() *TaskService { return &TaskService{} }
 
+// BuildStopsFromRoute prepares task stops for execution.
+func (s *TaskService) BuildStopsFromRoute(stops []domain.RouteStop) []domain.TaskStop {
+	bySequence := make(map[int]domain.RouteStop, len(stops))
+	for _, stop := range stops {
+		bySequence[stop.Sequence] = stop
+	}
+
+	taskStops := make([]domain.TaskStop, 0, len(bySequence))
+	for _, stop := range bySequence {
+		taskStops = append(taskStops, domain.TaskStop{
+			CustomerID: stop.CustomerID,
+			Sequence:   stop.Sequence,
+			Status:     domain.TaskPending,
+		})
+	}
+	return taskStops
+}
+
 func (s *TaskService) StatusFlow() map[string][]string {
 	return map[string][]string{
 		domain.TaskPending:   {domain.TaskClaimed, domain.TaskAbnormal},
@@ -62,4 +80,3 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
-

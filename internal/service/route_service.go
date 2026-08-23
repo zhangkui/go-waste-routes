@@ -29,6 +29,10 @@ func (s *RouteService) SortStops(stops []domain.RouteStop) []domain.RouteStop {
 	return ordered
 }
 
+func (s *RouteService) PreviewStops(stops []domain.RouteStop) []domain.RouteStop {
+	return s.SortStops(stops)
+}
+
 func (s *RouteService) EstimateArrivalTimes(start time.Time, stops []domain.RouteStop) []domain.RouteStop {
 	ordered := s.SortStops(stops)
 	current := start
