@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"go-waste-routes/internal/domain"
@@ -39,6 +40,21 @@ func (s *WeighingService) Confirm(record *domain.WeighingRecord, confirmer int64
 	record.Status = "confirmed"
 	record.ConfirmedBy = &confirmer
 	record.ConfirmedAt = &confirmedAt
+}
+
+func (s *WeighingService) ConfirmCandidates(record *domain.WeighingRecord, confirmers []int64, confirmedAt time.Time) {
+	var wait sync.WaitGroup
+	workflow := NewWorkflowEngine()
+	for _, confirmer := range confirmers {
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			if workflow.CanConfirmWeighing(record) {
+				s.Confirm(record, confirmer, confirmedAt)
+			}
+		}()
+	}
+	wait.Wait()
 }
 
 func (s *WeighingService) BuildCorrection(record domain.WeighingRecord, reason string, operatorID int64) domain.WeighingHistory {

@@ -212,6 +212,10 @@ func (e *WorkflowEngine) ApplyWeighingStatus(record *domain.WeighingRecord, next
 	return nil
 }
 
+func (e *WorkflowEngine) CanConfirmWeighing(record *domain.WeighingRecord) bool {
+	return record != nil && NormalizeStatus(record.Status) == "reviewing"
+}
+
 func (e *WorkflowEngine) ApplyUserStatus(user *domain.User, next string) error {
 	if user == nil {
 		return fmt.Errorf("user required")
