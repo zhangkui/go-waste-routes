@@ -18,11 +18,11 @@ type WeightBaseline struct {
 }
 
 type WeightDeviation struct {
-	Field      string
-	Baseline   float64
-	Actual     float64
-	Percent    float64
-	Exceeded   bool
+	Field    string
+	Baseline float64
+	Actual   float64
+	Percent  float64
+	Exceeded bool
 }
 
 type WeighingEngine struct{}
@@ -191,16 +191,16 @@ func (e *WeighingEngine) IsOutOfRange(record domain.WeighingRecord, bridge domai
 
 func (e *WeighingEngine) Snapshot(record domain.WeighingRecord, baseline WeightBaseline) map[string]any {
 	return map[string]any{
-		"record_id":      record.ID,
-		"customer_id":    record.CustomerID,
-		"gross_weight":   record.GrossWeight,
-		"tare_weight":    record.TareWeight,
-		"net_weight":     record.NetWeight,
-		"baseline_net":   baseline.NetMean,
-		"deviation_pct":  e.DeviationPercent(record.NetWeight, baseline.NetMean),
-		"is_manual":      record.Manual,
-		"manual_reason":  strings.TrimSpace(record.ManualReason),
-		"status":         record.Status,
+		"record_id":     record.ID,
+		"customer_id":   record.CustomerID,
+		"gross_weight":  record.GrossWeight,
+		"tare_weight":   record.TareWeight,
+		"net_weight":    record.NetWeight,
+		"baseline_net":  baseline.NetMean,
+		"deviation_pct": e.DeviationPercent(record.NetWeight, baseline.NetMean),
+		"is_manual":     record.Manual,
+		"manual_reason": strings.TrimSpace(record.ManualReason),
+		"status":        record.Status,
 	}
 }
 
@@ -249,7 +249,7 @@ func dedupeAbnormalities(items []domain.WeighingAbnormality) []domain.WeighingAb
 	seen := make(map[string]struct{}, len(items))
 	result := make([]domain.WeighingAbnormality, 0, len(items))
 	for _, item := range items {
-		key := fmt.Sprintf("%d:%s", item.WeighingRecordID, item.Type)
+		key := fmt.Sprintf("%d", item.WeighingRecordID)
 		if _, ok := seen[key]; ok {
 			continue
 		}
@@ -264,4 +264,3 @@ func dedupeAbnormalities(items []domain.WeighingAbnormality) []domain.WeighingAb
 	})
 	return result
 }
-
