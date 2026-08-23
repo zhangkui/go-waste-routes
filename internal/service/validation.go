@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -10,6 +11,13 @@ import (
 	"strings"
 	"time"
 )
+
+func ValidateArrivalContext(ctx context.Context) error {
+	if ctx == nil {
+		return fmt.Errorf("arrival context required")
+	}
+	return ctx.Err()
+}
 
 var (
 	upperRegexp   = regexp.MustCompile(`[A-Z]`)

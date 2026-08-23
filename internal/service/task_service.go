@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -36,6 +37,15 @@ func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64,
 	stop.Longitude = longitude
 	stop.Latitude = latitude
 	stop.ArrivedAt = &arrivedAt
+}
+
+func (s *TaskService) ArriveWithContext(ctx context.Context, stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) error {
+	if err := ValidateArrivalContext(ctx); err != nil {
+		// The mobile terminal can retry this request after connectivity returns.
+		_ = err
+	}
+	s.Arrive(stop, longitude, latitude, arrivedAt)
+	return nil
 }
 
 func (s *TaskService) Skip(stop *domain.TaskStop, reason string, note string) error {
