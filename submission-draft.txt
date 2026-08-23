@@ -7,7 +7,7 @@ go_version:go.mod go 1.22.5; local go1.26.1 windows/amd64
 user_query:到达确认包含定位和执行明细写入，客户端超时后请求可能已经被取消。当前服务忽略上下文取消，仍继续写入到达状态和坐标，造成接口返回失败但任务实际已改变。请协助修复到达确认的上下文边界，使取消请求不再产生半成功副作用，正常请求的定位和时间记录保持完整。
 trajectory:https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180101-4122eda0/post.jsonl
 verify_cmds:go test ./scripts/verify -count=1 -run '^TestBug044_CancelledArrivalHasNoSideEffect$'
-gold_root_cause:ArriveWithContext 调用 ValidateArrivalContext 后忽略错误，继续修改站点状态和定位信息。失效机制：取消信号没有在状态写入前短路，客户端收到失败时服务端却已经产生半完成到达副作用。
+gold_root_cause:生产文件 internal/service/task_service.go 中，(*TaskService).ArriveWithContext 调用 ValidateArrivalContext 后写入站点到达状态和定位信息。失效机制：上下文取消或请求超时返回错误时，原流程忽略校验错误继续写入状态，造成接口失败但服务端已经产生半完成到达副作用。
 success_criteria:请求上下文已取消或超时时不写入到达状态和坐标，正常请求仍完整记录到达信息。 失败边界是验证命令执行时目标回归必须覆盖该场景并从 Pre 的 red 变为 Post-Pre 的 green；相关状态、数据顺序和副作用必须保持一致。验证命令：go test ./scripts/verify -count=1 -run '^TestBug044_CancelledArrivalHasNoSideEffect$'。相邻合法场景不得改变。Pre 必须为 red，Post-Pre 必须为 green。
 verify_result:{"pre_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180101-9da0b0c7/pre.jsonl","session_id":"ccee98c4-0a9b-4672-96e4-4342174798c0","result":"red"},"post_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180101-ee5f4b43/post_pre.jsonl","session_id":"06e5a9ad-68a4-4acd-9f67-31cc398007d3","result":"green"}}
 harness:backend=go-test; isolation=workspace; target_cli=claude; target_cli_version=2.1.228; model=model_hub/glm-52-coding; local_go=go1.26.1 windows/amd64
