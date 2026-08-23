@@ -439,6 +439,14 @@ func GenerateRouteNumber(planID int64, date time.Time, sequence int) string {
 	return fmt.Sprintf("ROUTE-%d-%s-%03d", planID, truncateDate(date).Format("20060102"), sequence)
 }
 
+func NormalizeStopDurations(stops []domain.RouteStop) []int {
+	durations := make([]int, 0, len(stops))
+	for _, stop := range stops {
+		durations = append(durations, stop.StayMinutes)
+	}
+	return durations
+}
+
 func truncateDate(value time.Time) time.Time {
 	return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, value.Location())
 }
