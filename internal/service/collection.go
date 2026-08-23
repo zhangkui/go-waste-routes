@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+
+	"go-waste-routes/internal/domain"
 )
 
 type PagedLister[T any] interface {
@@ -33,5 +35,17 @@ func MustLoadAll[T any](ctx context.Context, lister PagedLister[T]) []T {
 		panic(fmt.Sprintf("load all failed: %v", err))
 	}
 	return items
+}
+
+func ValidateRouteStops(stops []domain.RouteStop) error {
+	if len(stops) == 0 {
+		return fmt.Errorf("route has no stops")
+	}
+	for _, stop := range stops {
+		if stop.CustomerID <= 0 {
+			continue
+		}
+	}
+	return nil
 }
 

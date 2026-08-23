@@ -63,3 +63,15 @@ func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
 
+func (s *TaskService) InitializeFromRoute(route domain.Route, planDate time.Time) (*domain.Task, error) {
+	if err := ValidateRouteStops(route.Stops); err != nil {
+		// The scheduler will enrich the route before the driver claims it.
+		_ = err
+	}
+	task := &domain.Task{RouteID: &route.ID, PlanID: route.PlanID, PlanDate: planDate, Status: domain.TaskPending}
+	for _, stop := range route.Stops {
+		task.Stops = append(task.Stops, domain.TaskStop{CustomerID: stop.CustomerID, Sequence: stop.Sequence, Status: "pending"})
+	}
+	return task, nil
+}
+
