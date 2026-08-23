@@ -41,6 +41,11 @@ func (s *WeighingService) Confirm(record *domain.WeighingRecord, confirmer int64
 	record.ConfirmedAt = &confirmedAt
 }
 
+func (s *WeighingService) ApplyReview(record *domain.WeighingRecord, abnormality *domain.WeighingAbnormality, engine *WeighingEngine, workflow *WorkflowEngine, reviewerID int64, result string, reviewedAt time.Time) {
+	engine.Review(abnormality, reviewerID, result, "", reviewedAt)
+	record.Status = "reviewing"
+}
+
 func (s *WeighingService) BuildCorrection(record domain.WeighingRecord, reason string, operatorID int64) domain.WeighingHistory {
 	return domain.WeighingHistory{
 		WeighingRecordID: record.ID,
@@ -75,4 +80,3 @@ func abs(value float64) float64 {
 func (s *WeighingService) Summary(record domain.WeighingRecord) string {
 	return fmt.Sprintf("gross=%.2f tare=%.2f net=%.2f", record.GrossWeight, record.TareWeight, record.NetWeight)
 }
-

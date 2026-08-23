@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	WorkflowPlan       = "plan"
-	WorkflowRoute      = "route"
-	WorkflowTask       = "task"
-	WorkflowInvoice    = "invoice"
-	WorkflowWeighing   = "weighing"
-	WorkflowAbnormal   = "abnormality"
-	WorkflowUser       = "user"
-	WorkflowVehicle    = "vehicle"
+	WorkflowPlan     = "plan"
+	WorkflowRoute    = "route"
+	WorkflowTask     = "task"
+	WorkflowInvoice  = "invoice"
+	WorkflowWeighing = "weighing"
+	WorkflowAbnormal = "abnormality"
+	WorkflowUser     = "user"
+	WorkflowVehicle  = "vehicle"
 )
 
 type WorkflowEngine struct {
@@ -56,7 +56,7 @@ func NewWorkflowEngine() *WorkflowEngine {
 				domain.InvoiceWrittenOff: {},
 			},
 			WorkflowWeighing: {
-				"draft":    {"confirmed", "abnormal"},
+				"draft":     {"confirmed", "abnormal"},
 				"confirmed": {"corrected", "abnormal"},
 				"corrected": {},
 				"abnormal":  {"reviewing", "rejected"},
@@ -64,10 +64,10 @@ func NewWorkflowEngine() *WorkflowEngine {
 				"rejected":  {},
 			},
 			WorkflowAbnormal: {
-				"pending": { "reviewing", "rejected" },
-				"reviewing": { "confirmed", "rejected" },
+				"pending":   {"reviewing", "rejected"},
+				"reviewing": {"confirmed", "rejected"},
 				"confirmed": {},
-				"rejected": {},
+				"rejected":  {},
 			},
 			WorkflowUser: {
 				domain.UserStatusEnabled:  {domain.UserStatusDisabled},
@@ -75,9 +75,9 @@ func NewWorkflowEngine() *WorkflowEngine {
 			},
 			WorkflowVehicle: {
 				"available": {"repair", "scrap", "disabled"},
-				"repair":     {"available", "disabled"},
-				"scrap":      {},
-				"disabled":   {"available"},
+				"repair":    {"available", "disabled"},
+				"scrap":     {},
+				"disabled":  {"available"},
 			},
 		},
 	}
@@ -212,6 +212,17 @@ func (e *WorkflowEngine) ApplyWeighingStatus(record *domain.WeighingRecord, next
 	return nil
 }
 
+func (e *WorkflowEngine) ReviewOutcomeStatus(result string) string {
+	switch NormalizeStatus(result) {
+	case "approved", "confirmed", "pass":
+		return "confirmed"
+	case "rejected", "reject":
+		return "abnormal"
+	default:
+		return "reviewing"
+	}
+}
+
 func (e *WorkflowEngine) ApplyUserStatus(user *domain.User, next string) error {
 	if user == nil {
 		return fmt.Errorf("user required")
@@ -289,4 +300,3 @@ func MergeStatusHistory(existing []domain.StatusHistory, incoming []domain.Statu
 	})
 	return merged
 }
-
