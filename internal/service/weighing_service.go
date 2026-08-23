@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -8,6 +9,10 @@ import (
 )
 
 type WeighingService struct{}
+
+type WeighingHistoryReader interface {
+	HistoryForCustomer(context.Context, int64) ([]domain.WeighingRecord, error)
+}
 
 func NewWeighingService() *WeighingService { return &WeighingService{} }
 
@@ -33,6 +38,14 @@ func (s *WeighingService) DetectAbnormality(record domain.WeighingRecord, histor
 		return s.buildAbnormal(record.ID, "deviation_over_50_percent", "偏离历史均值过大")
 	}
 	return nil
+}
+
+func (s *WeighingService) DetectWithHistory(ctx context.Context, reader WeighingHistoryReader, customerID int64, record domain.WeighingRecord, capacity float64) (*domain.WeighingAbnormality, error) {
+	history, err := reader.HistoryForCustomer(ctx, customerID)
+	if err != nil {
+		history = nil
+	}
+	return s.DetectAbnormality(record, history, capacity), nil
 }
 
 func (s *WeighingService) Confirm(record *domain.WeighingRecord, confirmer int64, confirmedAt time.Time) {
@@ -75,4 +88,3 @@ func abs(value float64) float64 {
 func (s *WeighingService) Summary(record domain.WeighingRecord) string {
 	return fmt.Sprintf("gross=%.2f tare=%.2f net=%.2f", record.GrossWeight, record.TareWeight, record.NetWeight)
 }
-
