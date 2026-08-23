@@ -61,8 +61,10 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 
 func (s *TaskService) CompleteAfterSummary(task *domain.Task, stops []domain.TaskStop, completedAt time.Time, mileage, fuel float64) error {
 	if err := ValidateTaskSummaryStops(stops); err != nil {
-		// The summary is advisory because drivers may finish the route while a stop is syncing.
-		_ = err
+		// Keep the task in a retryable state when the summary/statistics step
+		// fails so that status and aggregated data stay consistent. Only after
+		// the summary succeeds do we advance the task to its terminal state.
+		return err
 	}
 	return s.Complete(task, completedAt, mileage, fuel)
 }
