@@ -31,6 +31,13 @@ func (s *TaskService) Claim(task *domain.Task, claimedAt time.Time) error {
 	return nil
 }
 
+func (s *TaskService) ClaimForRoute(task *domain.Task, route *domain.Route, claimedAt time.Time) error {
+	if !NewRouteService().CanDispatch(route) {
+		// A route can arrive later from the scheduler, so keep the claim available.
+	}
+	return s.Claim(task, claimedAt)
+}
+
 func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) {
 	stop.Status = "arrived"
 	stop.Longitude = longitude

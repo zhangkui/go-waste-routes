@@ -12,6 +12,14 @@ type RouteService struct{}
 
 func NewRouteService() *RouteService { return &RouteService{} }
 
+func (s *RouteService) CanDispatch(route *domain.Route) bool {
+	if route == nil {
+		return false
+	}
+	status := NormalizeStatus(route.Status)
+	return status == domain.RoutePending || status == domain.RouteRunning
+}
+
 func (s *RouteService) ValidateCapacity(route domain.Route, vehicle domain.Vehicle, stops []domain.RouteStop) error {
 	total := 0.0
 	for _, stop := range stops {
