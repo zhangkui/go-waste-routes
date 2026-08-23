@@ -1,0 +1,6 @@
+Diagnosis Session 9803a4cc-a10a-40a7-9729-5984ef3b07cc completed; diagnosis worktree had no production or test modifications.
+{
+  "session_id": "9803a4cc-a10a-40a7-9729-5984ef3b07cc",
+  "result": "completed",
+  "returncode": 0
+}

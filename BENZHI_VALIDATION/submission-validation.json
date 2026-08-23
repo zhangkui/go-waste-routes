@@ -1,0 +1,17 @@
+﻿{
+    "case_id":  "BUG-047",
+    "validated_at":  "2026-08-23T07:48:25.4976790Z",
+    "scope":  "trajectory URL binding and submission-draft copy",
+    "checks":  {
+                   "draft_top_trajectory_matches_diagnosis":  true,
+                   "draft_pre_trajectory_matches_upload":  true,
+                   "draft_diagnosis_trajectory_matches_upload":  true,
+                   "uploaded_pre_verified":  true,
+                   "uploaded_diagnosis_verified":  true,
+                   "uploaded_pre_size_hash_match":  true,
+                   "uploaded_diagnosis_size_hash_match":  true,
+                   "green_draft_hash_matches_external":  true,
+                   "all":  true
+               },
+    "result":  "PASS"
+}
