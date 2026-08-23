@@ -7,7 +7,7 @@ go_version:go.mod go 1.22.5; local go1.26.1 windows/amd64
 user_query:任务完成时会同步生成执行摘要和里程统计。当前统计步骤返回错误后，完成流程仍然把任务推进为已完成，导致任务状态与汇总数据不一致。请帮忙修复完成流程的错误短路，让统计失败时保留可重试状态，统计成功时再推进任务终态，并保持跳过和异常流程不受影响。
 trajectory:https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180102-14d73735/post.jsonl
 verify_cmds:go test ./scripts/verify -count=1 -run '^TestBug039_SummaryFailureDoesNotCompleteTask$'
-gold_root_cause:CompleteAfterSummary 调用 ValidateTaskSummaryStops 后忽略了返回错误，随后继续执行终态推进。失效机制：统计失败信号没有沿完成流程短路，任务状态先变为已完成而摘要数据仍无效，形成状态与汇总结果不一致。
+gold_root_cause:生产文件 internal/service/task_service.go 中，(*TaskService).CompleteAfterSummary 调用 ValidateTaskSummaryStops 后决定是否推进任务终态。失效机制：统计校验返回错误时，完成流程原先忽略该错误仍继续写入已完成状态，导致任务状态已经结束但执行摘要或里程统计仍然失败，后续无法按原状态重试。
 success_criteria:统计校验失败时任务保持可重试状态并返回错误，统计成功时才进入完成状态，跳过和异常流程仍保持原有行为。 失败边界是验证命令执行时目标回归必须覆盖该场景并从 Pre 的 red 变为 Post-Pre 的 green；相关状态、数据顺序和副作用必须保持一致。验证命令：go test ./scripts/verify -count=1 -run '^TestBug039_SummaryFailureDoesNotCompleteTask$'。相邻合法场景不得改变。Pre 必须为 red，Post-Pre 必须为 green。
 verify_result:{"pre_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180102-5bccc63b/pre.jsonl","session_id":"f54a7d10-6a59-455d-8de1-4aecfd5bf14b","result":"red"},"post_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180103-fa130a54/post_pre.jsonl","session_id":"95562340-408e-41d6-9cdb-6c8db3a60686","result":"green"}}
 harness:backend=go-test; isolation=workspace; target_cli=claude; target_cli_version=2.1.228; model=model_hub/glm-52-coding; local_go=go1.26.1 windows/amd64
