@@ -50,6 +50,18 @@ func (s *RouteService) NextStatus(status string) string {
 	}
 }
 
+func (s *RouteService) ExecuteRoute(route *domain.Route, vehicle *domain.Vehicle, execute func() error) error {
+	SetVehicleDispatchState(vehicle, "running")
+	route.Status = domain.RouteRunning
+	if err := execute(); err != nil {
+		route.Status = domain.RouteAbnormal
+		return err
+	}
+	route.Status = domain.RouteCompleted
+	SetVehicleDispatchState(vehicle, "available")
+	return nil
+}
+
 func max(a, b int) int {
 	if a > b {
 		return a

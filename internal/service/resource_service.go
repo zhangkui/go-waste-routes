@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"go-waste-routes/internal/domain"
 	"go-waste-routes/internal/repository/memory"
 )
 
@@ -47,4 +48,8 @@ func (s *ResourceService[T]) Delete(ctx context.Context, id int64) error {
 
 func ErrNotFound(err error) bool {
 	return errors.Is(err, context.Canceled)
+}
+
+func SetVehicleDispatchState(vehicle *domain.Vehicle, status string) {
+	vehicle.Status = status
 }
