@@ -41,8 +41,9 @@ func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64,
 
 func (s *TaskService) ArriveWithContext(ctx context.Context, stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) error {
 	if err := ValidateArrivalContext(ctx); err != nil {
-		// The mobile terminal can retry this request after connectivity returns.
-		_ = err
+		// Context cancelled (e.g. client timeout): bail out before mutating stop
+		// state so the mobile terminal can retry without half-success side effects.
+		return err
 	}
 	s.Arrive(stop, longitude, latitude, arrivedAt)
 	return nil
