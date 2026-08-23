@@ -8,7 +8,7 @@ import (
 	"go-waste-routes/internal/repository/memory"
 )
 
-var ErrResourceNotFound = errors.New("resource not found")`r`n`r`ntype ResourceService[T any] struct {
+var ErrResourceNotFound = errors.New("resource not found")`n`ntype ResourceService[T any] struct {
 	store *memory.Store[T]
 }
 
