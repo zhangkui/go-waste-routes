@@ -69,9 +69,6 @@ func (s *TaskService) BatchCompleteCustomerStops(stops []domain.TaskStop) []doma
 		byCustomer[stop.CustomerID] = append(byCustomer[stop.CustomerID], index)
 	}
 	for _, indexes := range byCustomer {
-		if len(indexes) > 1 {
-			indexes = indexes[:1]
-		}
 		for _, index := range indexes {
 			stops[index].Status = "completed"
 		}

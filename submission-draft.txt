@@ -1,0 +1,14 @@
+session_id:615d17ac-3b0d-4962-92e7-c612e410c4af
+bug_id:go-waste-routes-bug048
+task_type:bugfix
+bug_category:slice
+repo_url:https://github.com/zhangkui/go-waste-routes/tree/bug048_green
+go_version:go.mod go 1.22.5; local go1.26.1 windows/amd64
+user_query:批量完成任务时，服务会先按客户分组，再更新该客户下的多个站点。当前分组切片在遍历过程中被复用，第二个站点开始被跳过，结果是接口返回全部成功但部分站点仍然待执行。请帮忙修复批量状态更新的集合处理，让同一客户多个站点全部更新且不同客户之间互不影响。
+trajectory:https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180059-823097e9/post.jsonl
+verify_cmds:go test ./scripts/verify -count=1 -run '^TestBug048_BatchStatusUpdateKeepsAllCustomerStops$'
+gold_root_cause:BatchCompleteCustomerStops 按客户分组后对每组站点进行遍历，但原实现把多站点切片截断为首个元素。失效机制：分组结果在处理前被缩减，接口虽然返回成功，后续站点却没有进入状态更新流程。
+success_criteria:同一客户的多个站点全部完成，不同客户的站点互不影响，空集合和单站点场景保持原结果。 失败边界是验证命令执行时目标回归必须覆盖该场景并从 Pre 的 red 变为 Post-Pre 的 green；相关状态、数据顺序和副作用必须保持一致。验证命令：go test ./scripts/verify -count=1 -run '^TestBug048_BatchStatusUpdateKeepsAllCustomerStops$'。相邻合法场景不得改变。Pre 必须为 red，Post-Pre 必须为 green。
+verify_result:{"pre_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180059-f160327e/pre.jsonl","session_id":"628e2360-9ace-4cd1-afff-d358e0577363","result":"red"},"post_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180059-eaa9b46d/post_pre.jsonl","session_id":"cacdb109-f32a-4072-afe0-ee8885c2a409","result":"green"}}
+harness:backend=go-test; isolation=workspace; target_cli=claude; target_cli_version=2.1.228; model=model_hub/glm-52-coding; local_go=go1.26.1 windows/amd64
+generator_model:model_hub/glm-52-coding
