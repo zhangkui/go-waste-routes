@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"sort"
 	"time"
@@ -10,7 +11,24 @@ import (
 
 type RouteService struct{}
 
+type RouteStopWriter interface {
+	SaveStops(context.Context, int64, []domain.RouteStop) error
+}
+
 func NewRouteService() *RouteService { return &RouteService{} }
+
+func (s *RouteService) SaveRouteStops(ctx context.Context, route *domain.Route, stops []domain.RouteStop, writer RouteStopWriter) error {
+	if route == nil || writer == nil {
+		return errors.New("route and writer required")
+	}
+	route.Stops = append(route.Stops, stops...)
+	for index, stop := range stops {
+		if stop.CustomerID <= 0 || stop.Sequence != index+1 {
+			return errors.New("invalid route stop sequence")
+		}
+	}
+	return writer.SaveStops(ctx, route.ID, stops)
+}
 
 func (s *RouteService) ValidateCapacity(route domain.Route, vehicle domain.Vehicle, stops []domain.RouteStop) error {
 	total := 0.0
