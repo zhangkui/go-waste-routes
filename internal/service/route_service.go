@@ -51,15 +51,47 @@ func (s *RouteService) NextStatus(status string) string {
 }
 
 func (s *RouteService) ExecuteRoute(route *domain.Route, vehicle *domain.Vehicle, execute func() error) error {
-	SetVehicleDispatchState(vehicle, "running")
-	route.Status = domain.RouteRunning
+	s.acquireRoute(route, vehicle)
 	if err := execute(); err != nil {
-		route.Status = domain.RouteAbnormal
+		s.finishAbnormal(route, vehicle)
 		return err
 	}
-	route.Status = domain.RouteCompleted
-	SetVehicleDispatchState(vehicle, "available")
+	s.finishComplete(route, vehicle)
 	return nil
+}
+
+func (s *RouteService) CancelRoute(route *domain.Route, vehicle *domain.Vehicle) {
+	s.finishCancelled(route, vehicle)
+}
+
+func (s *RouteService) acquireRoute(route *domain.Route, vehicle *domain.Vehicle) {
+	SetVehicleDispatchState(vehicle, "running")
+	route.Status = domain.RouteRunning
+}
+
+func (s *RouteService) finishComplete(route *domain.Route, vehicle *domain.Vehicle) {
+	route.Status = domain.RouteCompleted
+	releaseVehicleDispatch(vehicle)
+}
+
+func (s *RouteService) finishCancelled(route *domain.Route, vehicle *domain.Vehicle) {
+	route.Status = domain.RouteCancelled
+	releaseVehicleDispatch(vehicle)
+}
+
+func (s *RouteService) finishAbnormal(route *domain.Route, vehicle *domain.Vehicle) {
+	route.Status = domain.RouteAbnormal
+	releaseVehicleDispatch(vehicle)
+}
+
+// releaseVehicleDispatch restores the vehicle to the idle dispatch state so it
+// can be rescheduled. It is the single cleanup point shared by the complete,
+// cancel, and abnormal exit paths so resource release stays consistent.
+func releaseVehicleDispatch(vehicle *domain.Vehicle) {
+	if vehicle == nil {
+		return
+	}
+	SetVehicleDispatchState(vehicle, "available")
 }
 
 func max(a, b int) int {

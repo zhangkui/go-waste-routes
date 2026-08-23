@@ -1,0 +1,14 @@
+session_id:0cc33515-c5a1-44d5-b9d4-4245d408bf0e
+bug_id:go-waste-routes-bug049
+task_type:bugfix
+bug_category:defer
+repo_url:https://github.com/zhangkui/go-waste-routes/tree/bug049_green
+go_version:go.mod go 1.22.5; local go1.26.1 windows/amd64
+user_query:路线执行过程遇到站点异常时，车辆会暂时进入执行中状态并持有本次路线资源。当前异常返回路径没有执行完整清理，车辆一直被认为正在执行，后续调度无法再次分配。请协助修复路线执行的退出清理和状态恢复，正常完成、取消和异常中断三条路径都要保持一致。
+trajectory:https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180103-50a746f8/post.jsonl
+verify_cmds:go test ./scripts/verify -count=1 -run '^TestBug049_RouteAbortReleasesVehicleState$'
+gold_root_cause:ExecuteRoute 只在主流程中设置车辆执行状态，异常返回路径没有统一释放，取消路径也缺少共享清理。失效机制：车辆资源释放分散且异常退出提前返回，导致车辆状态停留在执行中，后续路线无法重新分配。
+success_criteria:路线正常完成、取消和异常中断都释放车辆占用并恢复可调度状态，路线状态分别保持对应终态。 失败边界是验证命令执行时目标回归必须覆盖该场景并从 Pre 的 red 变为 Post-Pre 的 green；相关状态、数据顺序和副作用必须保持一致。验证命令：go test ./scripts/verify -count=1 -run '^TestBug049_RouteAbortReleasesVehicleState$'。相邻合法场景不得改变。Pre 必须为 red，Post-Pre 必须为 green。
+verify_result:{"pre_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180103-25279689/pre.jsonl","session_id":"d4c7de41-d46c-4620-b8d7-3df48ac91e91","result":"red"},"post_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180104-0661a393/post_pre.jsonl","session_id":"a7aa0922-caa2-4071-9419-7496e0b48ee6","result":"green"}}
+harness:backend=go-test; isolation=workspace; target_cli=claude; target_cli_version=2.1.228; model=model_hub/glm-52-coding; local_go=go1.26.1 windows/amd64
+generator_model:model_hub/glm-52-coding
