@@ -21,6 +21,14 @@ type OpsHandler struct {
 	Abnormalities *service.ResourceService[domain.WeighingAbnormality]
 	Invoices      *service.ResourceService[domain.Invoice]
 	Payments      *service.ResourceService[domain.PaymentRecord]
+	Tasks         *service.ResourceService[domain.Task]
+	TaskStops     *service.ResourceService[domain.TaskStop]
+	TaskActions   *service.TaskService
+}
+
+type taskCompletionPayload struct {
+	MileageKm  float64 `json:"mileage_km"`
+	FuelLiters float64 `json:"fuel_liters"`
 }
 
 type paymentPayload struct {
@@ -44,6 +52,25 @@ func (h *OpsHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.OK(w, snapshot, contextx.RequestID(r.Context()))
+}
+
+func (h *OpsHandler) CompleteTask(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil { response.Error(w, http.StatusBadRequest, response.CodeValidation, "invalid id", contextx.RequestID(r.Context())); return }
+	var payload taskCompletionPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil { response.Error(w, http.StatusBadRequest, response.CodeValidation, "invalid json", contextx.RequestID(r.Context())); return }
+	task, err := h.Tasks.Get(r.Context(), id)
+	if err != nil { response.Error(w, http.StatusNotFound, response.CodeNotFound, "not found", contextx.RequestID(r.Context())); return }
+	allStops, _, err := h.TaskStops.List(r.Context(), 1, 10000)
+	if err != nil { response.Error(w, http.StatusInternalServerError, response.CodeSystemError, err.Error(), contextx.RequestID(r.Context())); return }
+	stops := make([]domain.TaskStop, 0)
+	for _, stop := range allStops { if stop.TaskID == id { stops = append(stops, stop) } }
+	if err := h.TaskActions.CompleteWithStops(&task, stops, time.Now(), payload.MileageKm, payload.FuelLiters); err != nil {
+		response.Error(w, http.StatusBadRequest, response.CodeBusiness, err.Error(), contextx.RequestID(r.Context()))
+	}
+	updated, err := h.Tasks.Update(r.Context(), id, task)
+	if err != nil { response.Error(w, http.StatusInternalServerError, response.CodeSystemError, err.Error(), contextx.RequestID(r.Context())); return }
+	response.OK(w, updated, contextx.RequestID(r.Context()))
 }
 
 func (h *OpsHandler) Export(w http.ResponseWriter, r *http.Request) {

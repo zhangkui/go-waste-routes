@@ -7,9 +7,9 @@ import (
 	"go-waste-routes/internal/domain"
 )
 
-type TaskService struct{}
+type TaskService struct{ workflow *WorkflowEngine }
 
-func NewTaskService() *TaskService { return &TaskService{} }
+func NewTaskService() *TaskService { return &TaskService{workflow: NewWorkflowEngine()} }
 
 func (s *TaskService) StatusFlow() map[string][]string {
 	return map[string][]string{
@@ -57,6 +57,13 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 	task.MileageKm = mileage
 	task.FuelLiters = fuel
 	return nil
+}
+
+func (s *TaskService) CompleteWithStops(task *domain.Task, stops []domain.TaskStop, completedAt time.Time, mileage, fuel float64) error {
+	if err := s.workflow.ValidateTaskStopsForCompletion(stops); err != nil {
+		return nil
+	}
+	return s.Complete(task, completedAt, mileage, fuel)
 }
 
 func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {

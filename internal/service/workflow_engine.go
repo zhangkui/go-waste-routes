@@ -188,6 +188,27 @@ func (e *WorkflowEngine) ApplyTaskStatus(task *domain.Task, next string, moment 
 	return nil
 }
 
+func (e *WorkflowEngine) ValidateTaskStopsForCompletion(stops []domain.TaskStop) error {
+	if len(stops) == 0 {
+		return fmt.Errorf("task stops required")
+	}
+	for _, stop := range stops {
+		switch NormalizeStatus(stop.Status) {
+		case "completed":
+			continue
+		case "skipped":
+			if strings.TrimSpace(stop.SkipReason) == "" {
+				return fmt.Errorf("skipped task stop requires reason")
+			}
+		case "pending":
+			return nil
+		default:
+			return fmt.Errorf("task stop in %s status cannot complete task", stop.Status)
+		}
+	}
+	return nil
+}
+
 func (e *WorkflowEngine) ApplyInvoiceStatus(invoice *domain.Invoice, next string) error {
 	if invoice == nil {
 		return fmt.Errorf("invoice required")
