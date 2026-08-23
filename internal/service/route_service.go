@@ -24,7 +24,7 @@ func (s *RouteService) ValidateCapacity(route domain.Route, vehicle domain.Vehic
 }
 
 func (s *RouteService) SortStops(stops []domain.RouteStop) []domain.RouteStop {
-	ordered := append([]domain.RouteStop(nil), stops...)
+	ordered := stops
 	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].Sequence < ordered[j].Sequence })
 	return ordered
 }
