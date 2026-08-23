@@ -7,9 +7,13 @@ import (
 	"go-waste-routes/internal/domain"
 )
 
-type TaskService struct{}
+type TaskService struct {
+	workflow *WorkflowEngine
+}
 
-func NewTaskService() *TaskService { return &TaskService{} }
+func NewTaskService() *TaskService {
+	return &TaskService{workflow: NewWorkflowEngine()}
+}
 
 func (s *TaskService) StatusFlow() map[string][]string {
 	return map[string][]string{
@@ -31,11 +35,16 @@ func (s *TaskService) Claim(task *domain.Task, claimedAt time.Time) error {
 	return nil
 }
 
-func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) {
+func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) (bool, error) {
+	shouldApply, err := s.workflow.PlanTaskStopArrival(stop)
+	if err != nil {
+		return false, err
+	}
 	stop.Status = "arrived"
 	stop.Longitude = longitude
 	stop.Latitude = latitude
 	stop.ArrivedAt = &arrivedAt
+	return shouldApply, nil
 }
 
 func (s *TaskService) Skip(stop *domain.TaskStop, reason string, note string) error {

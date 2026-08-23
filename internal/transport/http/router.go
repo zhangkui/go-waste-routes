@@ -78,6 +78,8 @@ func NewRouter(deps Deps) http.Handler {
 		Abnormalities: deps.Abnormalities,
 		Invoices:      deps.Invoices,
 		Payments:      deps.Payments,
+		TaskStops:     deps.TaskStops,
+		TaskActions:   service.NewTaskService(),
 	}
 	protected.Get("/dashboard", opsHandler.DashboardView)
 	protected.Get("/exports/kinds", opsHandler.ExportKinds)
@@ -121,6 +123,7 @@ func NewRouter(deps Deps) http.Handler {
 	protected.Put("/abnormalities/{id}/review", opsHandler.ReviewAbnormality)
 	protected.Put("/invoices/{id}/confirm", opsHandler.ConfirmInvoice)
 	protected.Post("/invoices/{id}/payment", opsHandler.RecordPayment)
+	protected.Put("/task-stops/{id}/arrive", opsHandler.ArriveTaskStop)
 
 	router.Mount("/api/v1", api)
 	api.Mount("/", protected)

@@ -21,6 +21,14 @@ type OpsHandler struct {
 	Abnormalities *service.ResourceService[domain.WeighingAbnormality]
 	Invoices      *service.ResourceService[domain.Invoice]
 	Payments      *service.ResourceService[domain.PaymentRecord]
+	TaskStops     *service.ResourceService[domain.TaskStop]
+	TaskActions   *service.TaskService
+}
+
+type arrivalPayload struct {
+	Longitude float64   `json:"longitude"`
+	Latitude  float64   `json:"latitude"`
+	ArrivedAt time.Time `json:"arrived_at"`
 }
 
 type paymentPayload struct {
@@ -44,6 +52,35 @@ func (h *OpsHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.OK(w, snapshot, contextx.RequestID(r.Context()))
+}
+
+func (h *OpsHandler) ArriveTaskStop(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, response.CodeValidation, "invalid id", contextx.RequestID(r.Context()))
+		return
+	}
+	var payload arrivalPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		response.Error(w, http.StatusBadRequest, response.CodeValidation, "invalid json", contextx.RequestID(r.Context()))
+		return
+	}
+	stop, err := h.TaskStops.Get(r.Context(), id)
+	if err != nil {
+		response.Error(w, http.StatusNotFound, response.CodeNotFound, "not found", contextx.RequestID(r.Context()))
+		return
+	}
+	changed, err := h.TaskActions.Arrive(&stop, payload.Longitude, payload.Latitude, payload.ArrivedAt)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, response.CodeBusiness, err.Error(), contextx.RequestID(r.Context()))
+		return
+	}
+	updated, err := h.TaskStops.Update(r.Context(), id, stop)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, response.CodeSystemError, err.Error(), contextx.RequestID(r.Context()))
+		return
+	}
+	response.OK(w, map[string]any{"task_stop": updated, "changed": changed}, contextx.RequestID(r.Context()))
 }
 
 func (h *OpsHandler) Export(w http.ResponseWriter, r *http.Request) {

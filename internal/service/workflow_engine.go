@@ -188,6 +188,22 @@ func (e *WorkflowEngine) ApplyTaskStatus(task *domain.Task, next string, moment 
 	return nil
 }
 
+func (e *WorkflowEngine) PlanTaskStopArrival(stop *domain.TaskStop) (bool, error) {
+	if stop == nil {
+		return false, fmt.Errorf("task stop required")
+	}
+	switch NormalizeStatus(stop.Status) {
+	case "", "pending":
+		return true, nil
+	case "arrived":
+		return true, nil
+	case "completed", "skipped":
+		return false, fmt.Errorf("task stop in %s status cannot arrive", stop.Status)
+	default:
+		return false, fmt.Errorf("unsupported task stop status %s", stop.Status)
+	}
+}
+
 func (e *WorkflowEngine) ApplyInvoiceStatus(invoice *domain.Invoice, next string) error {
 	if invoice == nil {
 		return fmt.Errorf("invoice required")
