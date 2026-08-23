@@ -3,6 +3,8 @@ package service
 import (
 	"sort"
 	"time"
+
+	"go-waste-routes/internal/domain"
 )
 
 type DashboardStats struct {
@@ -15,6 +17,16 @@ type DashboardStats struct {
 type ReportService struct{}
 
 func NewReportService() *ReportService { return &ReportService{} }
+
+func (s *ReportService) PendingStops(stops []domain.TaskStop) int {
+	pending := 0
+	for _, stop := range stops {
+		if NormalizeStatus(stop.Status) == "pending" {
+			pending++
+		}
+	}
+	return pending
+}
 
 func (s *ReportService) BuildCollectionSeries(tasks []time.Time, weights []float64) map[string]float64 {
 	series := make(map[string]float64)

@@ -63,3 +63,19 @@ func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
 
+func (s *TaskService) BatchCompleteCustomerStops(stops []domain.TaskStop) []domain.TaskStop {
+	byCustomer := make(map[int64][]int)
+	for index, stop := range stops {
+		byCustomer[stop.CustomerID] = append(byCustomer[stop.CustomerID], index)
+	}
+	for _, indexes := range byCustomer {
+		if len(indexes) > 1 {
+			indexes = indexes[:1]
+		}
+		for _, index := range indexes {
+			stops[index].Status = "completed"
+		}
+	}
+	return stops
+}
+
