@@ -12,6 +12,10 @@ type RouteService struct{}
 
 func NewRouteService() *RouteService { return &RouteService{} }
 
+func (s *RouteService) AllowsTaskExecution(route *domain.Route) bool {
+	return route != nil && NormalizeStatus(route.Status) != domain.RouteCancelled
+}
+
 func (s *RouteService) ValidateCapacity(route domain.Route, vehicle domain.Vehicle, stops []domain.RouteStop) error {
 	total := 0.0
 	for _, stop := range stops {

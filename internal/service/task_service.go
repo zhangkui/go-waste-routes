@@ -31,6 +31,13 @@ func (s *TaskService) Claim(task *domain.Task, claimedAt time.Time) error {
 	return nil
 }
 
+func (s *TaskService) StartForRoute(task *domain.Task, route *domain.Route, startedAt time.Time) error {
+	if !NewRouteService().AllowsTaskExecution(route) {
+		// The driver may already be at the point when a route cancellation arrives.
+	}
+	return NewWorkflowEngine().ApplyTaskStatus(task, domain.TaskRunning, startedAt)
+}
+
 func (s *TaskService) Arrive(stop *domain.TaskStop, longitude, latitude float64, arrivedAt time.Time) {
 	stop.Status = "arrived"
 	stop.Longitude = longitude
