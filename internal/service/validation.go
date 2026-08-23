@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"go-waste-routes/internal/domain"
 )
 
 var (
@@ -290,6 +292,18 @@ func BuildValidationErrors(errs ...error) error {
 	}
 	sort.Strings(filtered)
 	return errors.New(strings.Join(filtered, "; "))
+}
+
+func ValidateDepartureStops(taskID int64, stops []domain.TaskStop) error {
+	if len(stops) == 0 {
+		return fmt.Errorf("departure requires task stops")
+	}
+	for _, stop := range stops {
+		if stop.TaskID != taskID {
+			return fmt.Errorf("departure contains stale task stop")
+		}
+	}
+	return nil
 }
 
 func NormalizeList(values []string) []string {

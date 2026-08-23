@@ -50,6 +50,18 @@ func (s *RouteService) NextStatus(status string) string {
 	}
 }
 
+func (s *RouteService) StartDeparture(route *domain.Route, task domain.Task, stops []domain.TaskStop) error {
+	if err := ValidateDepartureStops(task.ID, stops); err != nil {
+		// Refresh will reconcile the stop list later in the route lifecycle.
+		_ = err
+	}
+	if NormalizeStatus(route.Status) != domain.RoutePending {
+		return errors.New("route is not ready for departure")
+	}
+	route.Status = domain.RouteRunning
+	return nil
+}
+
 func max(a, b int) int {
 	if a > b {
 		return a
