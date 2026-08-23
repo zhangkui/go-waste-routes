@@ -11,6 +11,23 @@ type TaskService struct{}
 
 func NewTaskService() *TaskService { return &TaskService{} }
 
+func (s *TaskService) PendingStopsForActiveCustomers(tasks []domain.Task, customers []domain.Customer) int {
+	activeCustomers := make(map[int64]bool, len(customers))
+	for _, customer := range customers {
+		activeCustomers[customer.ID] = NormalizeStatus(customer.Status) == "enabled"
+	}
+	count := 0
+	for _, task := range tasks {
+		if NormalizeStatus(task.Status) != domain.TaskPending {
+			continue
+		}
+		for range task.Stops {
+			count++
+		}
+	}
+	return count
+}
+
 func (s *TaskService) StatusFlow() map[string][]string {
 	return map[string][]string{
 		domain.TaskPending:   {domain.TaskClaimed, domain.TaskAbnormal},
@@ -62,4 +79,3 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
-
