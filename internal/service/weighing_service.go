@@ -53,6 +53,12 @@ func (s *WeighingService) BuildCorrection(record domain.WeighingRecord, reason s
 	}
 }
 
+func (s *WeighingService) CorrectConfirmed(record *domain.WeighingRecord, gross, tare float64, reason string, operatorID int64) domain.WeighingHistory {
+	engine := NewWeighingEngine()
+	engine.ApplyCorrection(record, gross, tare)
+	return s.BuildCorrection(*record, reason, operatorID)
+}
+
 func (s *WeighingService) averageNetWeight(history []domain.WeighingRecord) float64 {
 	total := 0.0
 	for _, item := range history {

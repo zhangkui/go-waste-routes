@@ -137,6 +137,13 @@ func (e *WeighingEngine) CreateCorrectionHistory(original, corrected domain.Weig
 	}
 }
 
+func (e *WeighingEngine) ApplyCorrection(record *domain.WeighingRecord, gross, tare float64) {
+	record.GrossWeight = gross
+	record.TareWeight = tare
+	record.NetWeight = gross - tare
+	record.Status = "corrected"
+}
+
 func (e *WeighingEngine) Confirm(record *domain.WeighingRecord, confirmer int64, confirmedAt time.Time) {
 	if record == nil {
 		return
