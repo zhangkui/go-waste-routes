@@ -61,7 +61,7 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 
 func (s *TaskService) CompleteWithStops(task *domain.Task, stops []domain.TaskStop, completedAt time.Time, mileage, fuel float64) error {
 	if err := s.workflow.ValidateTaskStopsForCompletion(stops); err != nil {
-		return nil
+		return err
 	}
 	return s.Complete(task, completedAt, mileage, fuel)
 }

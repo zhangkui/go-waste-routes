@@ -67,6 +67,7 @@ func (h *OpsHandler) CompleteTask(w http.ResponseWriter, r *http.Request) {
 	for _, stop := range allStops { if stop.TaskID == id { stops = append(stops, stop) } }
 	if err := h.TaskActions.CompleteWithStops(&task, stops, time.Now(), payload.MileageKm, payload.FuelLiters); err != nil {
 		response.Error(w, http.StatusBadRequest, response.CodeBusiness, err.Error(), contextx.RequestID(r.Context()))
+		return
 	}
 	updated, err := h.Tasks.Update(r.Context(), id, task)
 	if err != nil { response.Error(w, http.StatusInternalServerError, response.CodeSystemError, err.Error(), contextx.RequestID(r.Context())); return }

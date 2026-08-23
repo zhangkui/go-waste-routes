@@ -201,7 +201,7 @@ func (e *WorkflowEngine) ValidateTaskStopsForCompletion(stops []domain.TaskStop)
 				return fmt.Errorf("skipped task stop requires reason")
 			}
 		case "pending":
-			return nil
+			return fmt.Errorf("task stop in pending status cannot complete task")
 		default:
 			return fmt.Errorf("task stop in %s status cannot complete task", stop.Status)
 		}
