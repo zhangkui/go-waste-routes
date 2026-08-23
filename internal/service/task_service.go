@@ -14,13 +14,26 @@ func NewTaskService() *TaskService { return &TaskService{} }
 func (s *TaskService) SummarizeBatch(tasks []domain.Task, acquire func(domain.Task) func()) int {
 	completed := 0
 	for _, task := range tasks {
-		release := acquire(task)
-		defer release()
-		if NormalizeStatus(task.Status) == domain.TaskCompleted {
-			completed++
-		}
+		completed += s.summarizeOne(task, acquire)
 	}
 	return completed
+}
+
+// summarizeOne processes a single task within its own resource scope. The
+// release callback is deferred to the per-task boundary so temporary audit
+// and computation contexts are freed as soon as the item finishes instead of
+// lingering until the whole batch returns. A panic in one item is recovered
+// so that only the failing task is skipped; the remaining tasks still run.
+func (s *TaskService) summarizeOne(task domain.Task, acquire func(domain.Task) func()) (count int) {
+	defer func() {
+		_ = recover()
+	}()
+	release := acquire(task)
+	defer release()
+	if NormalizeStatus(task.Status) == domain.TaskCompleted {
+		return 1
+	}
+	return 0
 }
 
 func (s *TaskService) StatusFlow() map[string][]string {
