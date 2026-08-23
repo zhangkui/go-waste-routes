@@ -3,10 +3,23 @@ package service
 import (
 	"errors"
 	"sort"
+	"sync"
 	"time"
 
 	"go-waste-routes/internal/domain"
 )
+
+func (s *RouteService) AccumulateMileage(vehicle *domain.Vehicle, deltas []float64) {
+	var wait sync.WaitGroup
+	for _, delta := range deltas {
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			vehicle.CurrentMileageKm += delta
+		}()
+	}
+	wait.Wait()
+}
 
 type RouteService struct{}
 

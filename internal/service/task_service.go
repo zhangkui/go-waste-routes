@@ -63,3 +63,13 @@ func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
 
+func (s *TaskService) MileageDeltas(tasks []domain.Task) []float64 {
+	deltas := make([]float64, 0, len(tasks))
+	for _, task := range tasks {
+		if task.MileageKm > 0 {
+			deltas = append(deltas, task.MileageKm)
+		}
+	}
+	return deltas
+}
+
