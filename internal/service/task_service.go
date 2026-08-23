@@ -11,6 +11,18 @@ type TaskService struct{}
 
 func NewTaskService() *TaskService { return &TaskService{} }
 
+func (s *TaskService) SummarizeBatch(tasks []domain.Task, acquire func(domain.Task) func()) int {
+	completed := 0
+	for _, task := range tasks {
+		release := acquire(task)
+		defer release()
+		if NormalizeStatus(task.Status) == domain.TaskCompleted {
+			completed++
+		}
+	}
+	return completed
+}
+
 func (s *TaskService) StatusFlow() map[string][]string {
 	return map[string][]string{
 		domain.TaskPending:   {domain.TaskClaimed, domain.TaskAbnormal},
@@ -62,4 +74,3 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
-
