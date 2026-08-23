@@ -108,11 +108,13 @@ func (s *DashboardService) Snapshot(ctx context.Context, now time.Time) (Dashboa
 	for _, weighing := range weighings {
 		snapshot.WeightTotalTon += weighing.NetWeight
 		dateKey := dateKey(weighing.WeighTime)
+		// Reuse the existing per-date point (which may already hold task
+		// counts from the task loop) instead of allocating a fresh one.
+		// Creating a new point here would discard previously aggregated
+		// sub-items for the same date, leaving the trend breakdown
+		// incomplete even though the daily totals look correct.
 		point := taskSeries[dateKey]
-		if point != nil {
-			point = &DashboardSeriesPoint{Date: dateKey}
-			taskSeries[dateKey] = point
-		} else {
+		if point == nil {
 			point = &DashboardSeriesPoint{Date: dateKey}
 			taskSeries[dateKey] = point
 		}

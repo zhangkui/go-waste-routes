@@ -1,0 +1,14 @@
+session_id:b9e92df0-de27-448f-a464-68e3a0ac9ef8
+bug_id:go-waste-routes-bug036
+task_type:bugfix
+bug_category:slice
+repo_url:https://github.com/zhangkui/go-waste-routes/tree/bug036_green
+go_version:go.mod go 1.22.5; local go1.26.1 windows/amd64
+user_query:仪表盘收运量趋势会把任务和称重记录按日期汇总。当前聚合过程中同一天不同类别的数据使用了可复用的临时切片，后写入的数据会覆盖前面的分类结果，趋势总量看似正确但分项不完整。请帮忙修复趋势聚合的数据隔离和合并逻辑，使同一天多类别、多来源数据都能保留且不影响其他日期。
+trajectory:https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180058-500afc4f/post.jsonl
+verify_cmds:go test ./scripts/verify -count=1 -run '^TestBug036_DashboardTrendKeepsSameDayCategories$'
+gold_root_cause:仪表盘 Snapshot 先处理任务序列，再处理称重序列；称重路径错误地重新创建同日期聚合点，覆盖了任务阶段已经写入的分类字段。失效机制：同一日期的聚合对象没有被复用，后写入的称重结果替换了先前的任务分项，造成总量仍可计算但明细缺失。
+success_criteria:同一天任务与称重数据合并时复用日期聚合点，保留不同来源和类别的分项结果，其他日期聚合不受影响。 失败边界是验证命令执行时目标回归必须覆盖该场景并从 Pre 的 red 变为 Post-Pre 的 green；相关状态、数据顺序和副作用必须保持一致。验证命令：go test ./scripts/verify -count=1 -run '^TestBug036_DashboardTrendKeepsSameDayCategories$'。相邻合法场景不得改变。Pre 必须为 red，Post-Pre 必须为 green。
+verify_result:{"pre_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180057-2fec7934/pre.jsonl","session_id":"d14daf23-7098-4652-b4ba-f6a0cb12b0f5","result":"red"},"post_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180058-51e5afc0/post_pre.jsonl","session_id":"84752c18-e1c7-4f08-9937-9b7769cf063a","result":"green"}}
+harness:backend=go-test; isolation=workspace; target_cli=claude; target_cli_version=2.1.228; model=model_hub/glm-52-coding; local_go=go1.26.1 windows/amd64
+generator_model:model_hub/glm-52-coding
