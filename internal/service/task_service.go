@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"go-waste-routes/internal/domain"
@@ -13,13 +14,10 @@ func NewTaskService() *TaskService { return &TaskService{} }
 
 // BuildStopsFromRoute prepares task stops for execution.
 func (s *TaskService) BuildStopsFromRoute(stops []domain.RouteStop) []domain.TaskStop {
-	bySequence := make(map[int]domain.RouteStop, len(stops))
-	for _, stop := range stops {
-		bySequence[stop.Sequence] = stop
-	}
-
-	taskStops := make([]domain.TaskStop, 0, len(bySequence))
-	for _, stop := range bySequence {
+	ordered := append([]domain.RouteStop(nil), stops...)
+	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].Sequence < ordered[j].Sequence })
+	taskStops := make([]domain.TaskStop, 0, len(ordered))
+	for _, stop := range ordered {
 		taskStops = append(taskStops, domain.TaskStop{
 			CustomerID: stop.CustomerID,
 			Sequence:   stop.Sequence,
@@ -28,7 +26,6 @@ func (s *TaskService) BuildStopsFromRoute(stops []domain.RouteStop) []domain.Tas
 	}
 	return taskStops
 }
-
 func (s *TaskService) StatusFlow() map[string][]string {
 	return map[string][]string{
 		domain.TaskPending:   {domain.TaskClaimed, domain.TaskAbnormal},
