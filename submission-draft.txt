@@ -7,7 +7,7 @@ go_version:go.mod go 1.22.5; local go1.26.1 windows/amd64
 user_query:司机领取任务时，任务可能暂时没有完整路线关联，或者路线对象读取不到。当前领取流程只要任务本身存在就继续改状态，造成执行中的任务没有可追踪路线。请帮忙补齐领取前的关联数据校验，缺少路线时返回明确业务错误并保持原状态，完整关联的正常领取不受影响。
 trajectory:https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180104-7d4d4f4b/post.jsonl
 verify_cmds:go test ./scripts/verify -count=1 -run '^TestBug041_TaskClaimRequiresRouteAssociation$'
-gold_root_cause:ClaimForRoute 在使用任务路线关系和 CanDispatch 判断前没有完整校验对象及关联关系，调度上下文不完整时仍可能继续领取。失效机制：领取流程把不完整的路线关联当作可调度输入，导致任务进入已领取状态但无法对应有效路线。
+gold_root_cause:生产文件 internal/service/task_service.go 中，(*TaskService).ClaimForRoute 在调用 RouteService.CanDispatch 前处理任务与路线关联。失效机制：缺陷路径没有先拒绝空任务、缺少路线关联或不可调度路线，导致无有效路线的任务仍可能进入已领取状态，形成任务状态与路线调度信息不一致。
 success_criteria:领取任务前拒绝缺少任务、路线或不可调度路线的关联场景，合法且可调度的任务仍可正常领取。失败边界是验证命令执行时目标回归必须覆盖该场景并从 Pre 的 red 变为 Post-Pre 的 green；相关状态、数据顺序和副作用必须保持一致。验证命令：go test ./scripts/verify -count=1 -run '^TestBug041_TaskClaimRequiresRouteAssociation$'。相邻合法场景不得改变。Pre 必须为 red，Post-Pre 必须为 green。
 verify_result:{"pre_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180104-4ab731ba/pre.jsonl","session_id":"97fb6c2b-ebee-4b7f-920d-e56ecfb5cf81","result":"red"},"post_fix":{"trajectory_url":"https://bduse-1304520688.cos.ap-beijing.myqcloud.com/uploads/2026/08/23/180105-c7e7aeef/post_pre.jsonl","session_id":"c4a4f84b-e39c-4b5a-a40a-b70bb83523a7","result":"green"}}
 harness:backend=go-test; isolation=workspace; target_cli=claude; target_cli_version=2.1.228; model=model_hub/glm-52-coding; local_go=go1.26.1 windows/amd64
