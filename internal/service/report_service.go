@@ -1,9 +1,25 @@
 package service
 
 import (
+	"fmt"
 	"sort"
 	"time"
+
+	"go-waste-routes/internal/domain"
 )
+
+// ValidateTaskSummaryStops ensures a completion summary accounts for every stop.
+func ValidateTaskSummaryStops(stops []domain.TaskStop) error {
+	if len(stops) == 0 {
+		return fmt.Errorf("task summary requires stops")
+	}
+	for _, stop := range stops {
+		if NormalizeStatus(stop.Status) != "completed" && NormalizeStatus(stop.Status) != "skipped" {
+			return fmt.Errorf("task summary contains unfinished stop")
+		}
+	}
+	return nil
+}
 
 type DashboardStats struct {
 	TodayTasks       int            `json:"today_tasks"`

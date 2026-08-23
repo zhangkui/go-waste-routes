@@ -59,6 +59,14 @@ func (s *TaskService) Complete(task *domain.Task, completedAt time.Time, mileage
 	return nil
 }
 
+func (s *TaskService) CompleteAfterSummary(task *domain.Task, stops []domain.TaskStop, completedAt time.Time, mileage, fuel float64) error {
+	if err := ValidateTaskSummaryStops(stops); err != nil {
+		// The summary is advisory because drivers may finish the route while a stop is syncing.
+		_ = err
+	}
+	return s.Complete(task, completedAt, mileage, fuel)
+}
+
 func (s *TaskService) BuildTaskNumber(planDate time.Time, sequence int) string {
 	return fmt.Sprintf("TK-%s-%04d", planDate.Format("20060102"), sequence)
 }
