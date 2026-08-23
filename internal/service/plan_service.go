@@ -10,10 +10,16 @@ import (
 
 type PlanService struct {
 	holidayChecker func(time.Time) bool
+	generationSeq  int
 }
 
 func NewPlanService(holidayChecker func(time.Time) bool) *PlanService {
 	return &PlanService{holidayChecker: holidayChecker}
+}
+
+func (s *PlanService) GenerateDailyTaskSet(planID int64, day time.Time) []string {
+	s.generationSeq++
+	return []string{GenerateTaskNumber(planID, day, s.generationSeq)}
 }
 
 func (s *PlanService) Preview(plan domain.CollectionPlan, days int) []time.Time {
@@ -88,4 +94,3 @@ func (s *PlanService) EstimateMonthly(plan domain.CollectionPlan, frequency int)
 func (s *PlanService) Summarize(plan domain.CollectionPlan) string {
 	return fmt.Sprintf("%s-v%d", plan.Name, plan.Version)
 }
-
