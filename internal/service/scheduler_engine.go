@@ -16,11 +16,11 @@ type TimeWindow struct {
 }
 
 type ScheduleOccurrence struct {
-	Date        time.Time `json:"date"`
-	RuleType    string    `json:"rule_type"`
-	RuleValue   string    `json:"rule_value"`
-	Shifted     bool      `json:"shifted"`
-	ShiftReason string    `json:"shift_reason"`
+	Date        time.Time    `json:"date"`
+	RuleType    string       `json:"rule_type"`
+	RuleValue   string       `json:"rule_value"`
+	Shifted     bool         `json:"shifted"`
+	ShiftReason string       `json:"shift_reason"`
 	Windows     []TimeWindow `json:"windows,omitempty"`
 }
 
@@ -52,7 +52,6 @@ func (s *Scheduler) BuildOccurrences(plan domain.CollectionPlan, rules []domain.
 		expansions := s.expandRule(plan, rule, holidayMap, start, end)
 		occurrences = append(occurrences, expansions...)
 	}
-	occurrences = uniqueOccurrences(occurrences)
 	sort.SliceStable(occurrences, func(i, j int) bool {
 		if occurrences[i].Date.Equal(occurrences[j].Date) {
 			return occurrences[i].RuleType < occurrences[j].RuleType
@@ -446,4 +445,3 @@ func truncateDate(value time.Time) time.Time {
 func dateKey(value time.Time) string {
 	return truncateDate(value).Format("2006-01-02")
 }
-
