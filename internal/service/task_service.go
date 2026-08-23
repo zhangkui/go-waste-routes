@@ -32,8 +32,17 @@ func (s *TaskService) Claim(task *domain.Task, claimedAt time.Time) error {
 }
 
 func (s *TaskService) ClaimForRoute(task *domain.Task, route *domain.Route, claimedAt time.Time) error {
+	if task == nil {
+		return fmt.Errorf("task required")
+	}
+	if task.RouteID == nil || *task.RouteID == 0 {
+		return fmt.Errorf("task has no associated route, cannot claim")
+	}
+	if route == nil {
+		return fmt.Errorf("route not found for task, cannot claim")
+	}
 	if !NewRouteService().CanDispatch(route) {
-		// A route can arrive later from the scheduler, so keep the claim available.
+		return fmt.Errorf("route is not available for dispatch, cannot claim")
 	}
 	return s.Claim(task, claimedAt)
 }
