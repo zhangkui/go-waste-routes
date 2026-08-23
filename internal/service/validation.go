@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"go-waste-routes/internal/domain"
 )
 
 var (
@@ -78,16 +80,30 @@ func NonEmpty(value string, fallback string) string {
 	return value
 }
 
+func ValidateRouteStops(stops []domain.RouteStop) ([]domain.RouteStop, error) {
+	if len(stops) == 0 {
+		return nil, errors.New("route stops required")
+	}
+	valid := make([]domain.RouteStop, 0, len(stops))
+	for _, stop := range stops {
+		if stop.CustomerID <= 0 || stop.Sequence <= 0 || stop.EstimatedWeightTons < 0 {
+			return nil, errors.New("invalid route stop")
+		}
+		valid = append(valid, stop)
+	}
+	return valid, nil
+}
+
 func BuildStatusFlow() map[string][]string {
 	return map[string][]string{
-		"draft":    {"active", "archived"},
-		"active":   {"disabled", "archived"},
-		"disabled": {"active", "archived"},
-		"pending":  {"running", "cancelled", "abnormal", "completed"},
-		"running":  {"completed", "cancelled", "abnormal"},
+		"draft":     {"active", "archived"},
+		"active":    {"disabled", "archived"},
+		"disabled":  {"active", "archived"},
+		"pending":   {"running", "cancelled", "abnormal", "completed"},
+		"running":   {"completed", "cancelled", "abnormal"},
 		"completed": {"written_off"},
 		"confirmed": {"partial", "paid", "written_off"},
-		"partial":  {"paid", "written_off"},
+		"partial":   {"paid", "written_off"},
 	}
 }
 

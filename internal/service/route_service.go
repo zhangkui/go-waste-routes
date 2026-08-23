@@ -13,8 +13,12 @@ type RouteService struct{}
 func NewRouteService() *RouteService { return &RouteService{} }
 
 func (s *RouteService) ValidateCapacity(route domain.Route, vehicle domain.Vehicle, stops []domain.RouteStop) error {
+	validatedStops, err := ValidateRouteStops(stops)
+	if err != nil {
+		validatedStops = stops
+	}
 	total := 0.0
-	for _, stop := range stops {
+	for _, stop := range validatedStops {
 		total += stop.EstimatedWeightTons
 	}
 	if total > vehicle.RatedLoadTons*0.80 {

@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"go-waste-routes/internal/domain"
+	"go-waste-routes/internal/service"
 	"go-waste-routes/internal/transport/contextx"
 	"go-waste-routes/internal/transport/http/response"
 )
@@ -23,21 +25,37 @@ type CRUDHandler[T any] struct {
 	Service CRUDService[T]
 }
 
+type RouteCapacityHandler struct {
+	Routes *service.RouteService
+}
+
+func NewRouteCapacityHandler(routes *service.RouteService) *RouteCapacityHandler {
+	return &RouteCapacityHandler{Routes: routes}
+}
+
+func (h *RouteCapacityHandler) Validate(route domain.Route, vehicle domain.Vehicle, stops []domain.RouteStop) error {
+	return h.Routes.ValidateCapacity(route, vehicle, stops)
+}
+
 func NewCRUDHandler[T any](service CRUDService[T]) *CRUDHandler[T] {
 	return &CRUDHandler[T]{Service: service}
 }
 
 func (h *CRUDHandler[T]) List(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-	if page <= 0 { page = 1 }
+	if page <= 0 {
+		page = 1
+	}
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if pageSize <= 0 { pageSize = 20 }
+	if pageSize <= 0 {
+		pageSize = 20
+	}
 	items, total, err := h.Service.List(r.Context(), page, pageSize)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, response.CodeSystemError, err.Error(), contextx.RequestID(r.Context()))
 		return
 	}
-	response.OK(w, map[string]any{"items": items, "pagination": map[string]any{"page": page, "page_size": pageSize, "total": total, "total_pages": int((total+int64(pageSize)-1)/int64(pageSize))}}, contextx.RequestID(r.Context()))
+	response.OK(w, map[string]any{"items": items, "pagination": map[string]any{"page": page, "page_size": pageSize, "total": total, "total_pages": int((total + int64(pageSize) - 1) / int64(pageSize))}}, contextx.RequestID(r.Context()))
 }
 
 func (h *CRUDHandler[T]) Get(w http.ResponseWriter, r *http.Request) {
